@@ -1,0 +1,11 @@
+{
+  "metric_id": "test_ratio",
+  "definition_version": "1.0.0",
+  "status": "undefined",
+  "exact_value": null,
+  "reason": "The test denominator is zero",
+  "snapshot_id": "TEST_FINAL_V1",
+  "scope_id": "test_scope",
+  "coverage_ref": "TEST_COVERAGE_V1",
+  "provenance_ids": []
+}

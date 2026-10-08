@@ -1,0 +1,31 @@
+{
+  "id": "LEGACY_DEMO_V1",
+  "label": "Legacy demo snapshot",
+  "freshness": "B0",
+  "kind": "demo",
+  "publishedAt": "2026-07-02T12:00:00Z",
+  "manifest": {
+    "id": "LEGACY_COVERAGE_V1",
+    "scopeId": "synthetic_senior_v1",
+    "policy": "completed_editions",
+    "cutoffAt": "2026-07-01T00:00:00Z",
+    "editions": [
+      {
+        "competition": "Synthetic sample matches",
+        "season": "2025/26",
+        "status": "completed",
+        "matchSetId": "legacy_demo_matches"
+      }
+    ],
+    "exclusions": ["Synthetic legacy fixture; not factual sports data."],
+    "validated": true
+  },
+  "players": [
+    { "id": "player_one", "name": "Player One", "country": "Example", "initials": "P1", "number": 1, "accent": "coral" },
+    { "id": "player_two", "name": "Player Two", "country": "Example", "initials": "P2", "number": 2, "accent": "mint" }
+  ],
+  "sources": [
+    { "id": "legacy_fixture", "provider": "fixture", "url": "fixture://legacy", "retrievedAt": "2026-07-02T12:00:00Z", "attribution": "Synthetic fixture", "documentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
+  ],
+  "observations": []
+}

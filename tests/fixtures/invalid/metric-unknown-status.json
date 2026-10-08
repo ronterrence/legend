@@ -1,0 +1,10 @@
+{
+  "metric_id": "test_ratio",
+  "definition_version": "1.0.0",
+  "status": "estimated",
+  "exact_value": { "kind": "decimal", "value": "0.73" },
+  "snapshot_id": "TEST_FINAL_V1",
+  "scope_id": "test_scope",
+  "coverage_ref": "TEST_COVERAGE_V1",
+  "provenance_ids": ["prov_test_001"]
+}

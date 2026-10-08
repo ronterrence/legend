@@ -19,7 +19,8 @@
     "prepare:b0": "tsx src/ingestion/build-b0-international.ts",
     "provider": "tsx --env-file-if-exists=.env src/cli.ts provider",
     "test:e2e": "playwright test",
-    "check": "npm run test && npm run validate && npm run build"
+    "format:check": "prettier --check src/contracts/index.ts src/metrics/*.ts tests/contracts.test.ts tests/metrics.test.ts schemas/*.schema.json schemas/dashboard/dashboard.schema.json",
+    "check": "npm run format:check && npm run test && npm run validate && npm run build"
   },
   "dependencies": {
     "@fontsource/barlow-condensed": "^5.2.8",

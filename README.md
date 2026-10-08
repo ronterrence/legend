@@ -43,7 +43,7 @@ Transfermarkt is an additional verification source. No automated Transfermarkt c
 
 ### Publish reviewed data
 
-Create a JSON bundle with `snapshot` matching schemas/snapshot.schema.json, optional `alias`, and `evidence`: an array of `{ "path": "relative/source-file", "hash": "sha256" }`. Paths are relative to the bundle. Include all source documents and match-set evidence in this array.
+Create a JSON bundle with `snapshot` matching schemas/dashboard/snapshot.schema.json, optional `alias`, and `evidence`: an array of `{ "path": "relative/source-file", "hash": "sha256" }`. Paths are relative to the bundle. Include all source documents and match-set evidence in this array.
 
 Every observation needs accepted review, a reason, source IDs, definition version and declared match-set scope. Missing metrics use null and unknown/partial coverage. Conflicts must be reconciled before import; duplicate player/metric observations are rejected.
 

@@ -1,0 +1,8 @@
+{
+  "source_record_id": "src_example_001",
+  "provider": "Example Registry",
+  "source_type": "secondary",
+  "external_ref": "example-record-123",
+  "url": "https://example.org/record/123",
+  "retrieved_at": "2026-09-12T12:00:00Z"
+}

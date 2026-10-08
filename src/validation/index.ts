@@ -1,19 +1,33 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import snapshotSchema from '../../schemas/snapshot.schema.json';
-import dashboardSchema from '../../schemas/dashboard.schema.json';
-import coverageSchema from '../../schemas/coverage.schema.json';
-import playerSchema from '../../schemas/player.schema.json';
-import provenanceSchema from '../../schemas/provenance.schema.json';
-import metricSchema from '../../schemas/metric.schema.json';
-import internationalSchema from '../../schemas/international.schema.json';
+import snapshotSchema from '../../schemas/dashboard/snapshot.schema.json';
+import dashboardSchema from '../../schemas/dashboard/dashboard.schema.json';
+import coverageSchema from '../../schemas/dashboard/coverage.schema.json';
+import playerSchema from '../../schemas/dashboard/player.schema.json';
+import provenanceSchema from '../../schemas/dashboard/provenance.schema.json';
+import metricSchema from '../../schemas/dashboard/metric.schema.json';
+import internationalSchema from '../../schemas/dashboard/international.schema.json';
+import canonicalMetricSchema from '../../schemas/metric.schema.json';
+import canonicalProvenanceSchema from '../../schemas/provenance.schema.json';
 import type { Snapshot, Dashboard } from '../domain.ts';
+import { validateMetricResult, validateProvenance } from '../contracts/index.ts';
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
-ajv.addSchema(coverageSchema,'coverage.schema.json');ajv.addSchema(playerSchema,'player.schema.json');ajv.addSchema(provenanceSchema,'provenance.schema.json');ajv.addSchema(metricSchema,'metric.schema.json');ajv.addSchema(internationalSchema,'international.schema.json');
+ajv.addSchema(coverageSchema,'coverage.schema.json');ajv.addSchema(playerSchema,'player.schema.json');ajv.addSchema(provenanceSchema,'provenance.schema.json');ajv.addSchema(metricSchema,'metric.schema.json');ajv.addSchema(canonicalMetricSchema,'canonical-metric.schema.json');ajv.addSchema(canonicalProvenanceSchema,'canonical-provenance.schema.json');ajv.addSchema(internationalSchema,'international.schema.json');
 const validate = ajv.compile<Snapshot>(snapshotSchema);
 const validateOutput=ajv.compile<Dashboard>(dashboardSchema);
-export function validateDashboard(input:unknown):asserts input is Dashboard {if(!validateOutput(input))throw new Error(`Dashboard schema validation failed: ${ajv.errorsText(validateOutput.errors)}`);}
+export function validateDashboard(input:unknown):asserts input is Dashboard {
+  if(!validateOutput(input))throw new Error(`Dashboard schema validation failed: ${ajv.errorsText(validateOutput.errors)}`);
+  const dashboard=input;
+  const provenanceIds=new Set(dashboard.provenance.map(record=>record.provenance_id));
+  for(const record of dashboard.provenance){validateProvenance(record);if(!dashboard.sources.some(source=>source.id===record.source_record_id))throw new Error(`Unknown provenance source: ${record.source_record_id}`);}
+  for(const result of dashboard.metricResults){
+    validateMetricResult(result);
+    if(result.snapshot_id!==dashboard.snapshotId)throw new Error('Metric result snapshot reference does not match dashboard');
+    if(result.coverage_ref!==dashboard.coverage.id)throw new Error('Metric result coverage reference does not match dashboard');
+    if(result.provenance_ids.some(id=>!provenanceIds.has(id)))throw new Error('Metric result references unknown provenance');
+  }
+}
 export function validateSnapshot(input: unknown): asserts input is Snapshot {
   if (!validate(input)) throw new Error(`Schema validation failed: ${ajv.errorsText(validate.errors)}`);
   const s = input;

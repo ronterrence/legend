@@ -20,16 +20,10 @@
       "minLength": 1
     },
     "freshness": {
-      "enum": [
-        "B0",
-        "B1"
-      ]
+      "enum": ["B0", "B1"]
     },
     "kind": {
-      "enum": [
-        "demo",
-        "verified"
-      ]
+      "enum": ["demo", "verified"]
     },
     "scopeId": {
       "type": "string",
@@ -62,6 +56,18 @@
         "$ref": "provenance.schema.json"
       }
     },
+    "metricResults": {
+      "type": "array",
+      "items": {
+        "$ref": "canonical-metric.schema.json"
+      }
+    },
+    "provenance": {
+      "type": "array",
+      "items": {
+        "$ref": "canonical-provenance.schema.json"
+      }
+    },
     "pages": {
       "type": "object",
       "additionalProperties": false,
@@ -88,10 +94,7 @@
                 "type": "string"
               },
               "direction": {
-                "enum": [
-                  "higher",
-                  "lower"
-                ]
+                "enum": ["higher", "lower"]
               },
               "left": {
                 "type": "object",
@@ -115,10 +118,7 @@
                             "pattern": "^[1-9][0-9]*$"
                           }
                         },
-                        "required": [
-                          "numerator",
-                          "denominator"
-                        ]
+                        "required": ["numerator", "denominator"]
                       }
                     ]
                   },
@@ -127,18 +127,10 @@
                     "minLength": 1
                   },
                   "status": {
-                    "enum": [
-                      "available",
-                      "unavailable",
-                      "undefined",
-                      "invalid"
-                    ]
+                    "enum": ["available", "unavailable", "undefined", "invalid"]
                   },
                   "reason": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   },
                   "sourceIds": {
                     "type": "array",
@@ -146,6 +138,9 @@
                       "type": "string",
                       "minLength": 1
                     }
+                  },
+                  "result": {
+                    "$ref": "canonical-metric.schema.json"
                   }
                 },
                 "required": [
@@ -178,10 +173,7 @@
                             "pattern": "^[1-9][0-9]*$"
                           }
                         },
-                        "required": [
-                          "numerator",
-                          "denominator"
-                        ]
+                        "required": ["numerator", "denominator"]
                       }
                     ]
                   },
@@ -190,18 +182,10 @@
                     "minLength": 1
                   },
                   "status": {
-                    "enum": [
-                      "available",
-                      "unavailable",
-                      "undefined",
-                      "invalid"
-                    ]
+                    "enum": ["available", "unavailable", "undefined", "invalid"]
                   },
                   "reason": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   },
                   "sourceIds": {
                     "type": "array",
@@ -209,6 +193,9 @@
                       "type": "string",
                       "minLength": 1
                     }
+                  },
+                  "result": {
+                    "$ref": "canonical-metric.schema.json"
                   }
                 },
                 "required": [
@@ -220,11 +207,7 @@
                 ]
               },
               "leader": {
-                "enum": [
-                  "left",
-                  "right",
-                  null
-                ]
+                "enum": ["left", "right", null]
               },
               "comparison": {
                 "type": "string",
@@ -266,10 +249,7 @@
                 "type": "string"
               },
               "direction": {
-                "enum": [
-                  "higher",
-                  "lower"
-                ]
+                "enum": ["higher", "lower"]
               },
               "left": {
                 "type": "object",
@@ -293,10 +273,7 @@
                             "pattern": "^[1-9][0-9]*$"
                           }
                         },
-                        "required": [
-                          "numerator",
-                          "denominator"
-                        ]
+                        "required": ["numerator", "denominator"]
                       }
                     ]
                   },
@@ -305,18 +282,10 @@
                     "minLength": 1
                   },
                   "status": {
-                    "enum": [
-                      "available",
-                      "unavailable",
-                      "undefined",
-                      "invalid"
-                    ]
+                    "enum": ["available", "unavailable", "undefined", "invalid"]
                   },
                   "reason": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   },
                   "sourceIds": {
                     "type": "array",
@@ -324,6 +293,9 @@
                       "type": "string",
                       "minLength": 1
                     }
+                  },
+                  "result": {
+                    "$ref": "canonical-metric.schema.json"
                   }
                 },
                 "required": [
@@ -356,10 +328,7 @@
                             "pattern": "^[1-9][0-9]*$"
                           }
                         },
-                        "required": [
-                          "numerator",
-                          "denominator"
-                        ]
+                        "required": ["numerator", "denominator"]
                       }
                     ]
                   },
@@ -368,18 +337,10 @@
                     "minLength": 1
                   },
                   "status": {
-                    "enum": [
-                      "available",
-                      "unavailable",
-                      "undefined",
-                      "invalid"
-                    ]
+                    "enum": ["available", "unavailable", "undefined", "invalid"]
                   },
                   "reason": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   },
                   "sourceIds": {
                     "type": "array",
@@ -387,6 +348,9 @@
                       "type": "string",
                       "minLength": 1
                     }
+                  },
+                  "result": {
+                    "$ref": "canonical-metric.schema.json"
                   }
                 },
                 "required": [
@@ -398,11 +362,7 @@
                 ]
               },
               "leader": {
-                "enum": [
-                  "left",
-                  "right",
-                  null
-                ]
+                "enum": ["left", "right", null]
               },
               "comparison": {
                 "type": "string",
@@ -426,11 +386,7 @@
           "$ref": "international.schema.json"
         }
       },
-      "required": [
-        "overview",
-        "efficiency",
-        "international"
-      ]
+      "required": ["overview", "efficiency", "international"]
     },
     "narrative": {
       "type": "string",
@@ -451,6 +407,8 @@
     "rendererVersion",
     "players",
     "sources",
+    "provenance",
+    "metricResults",
     "pages",
     "narrative"
   ]

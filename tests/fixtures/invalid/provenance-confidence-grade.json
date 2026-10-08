@@ -1,0 +1,8 @@
+{
+  "provenance_id": "prov_test_001",
+  "source_record_id": "src_example_001",
+  "retrieved_at": "2026-09-12T12:00:00Z",
+  "review_status": "accepted",
+  "review_reason": "Synthetic contract test fixture",
+  "confidence_grade": "A"
+}

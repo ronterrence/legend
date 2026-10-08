@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "fixture",
+        "rsssf",
+        "transfermarkt",
+        "api-football"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retrievedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "attribution": {
+      "type": "string",
+      "minLength": 1
+    },
+    "documentHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "required": [
+    "id",
+    "provider",
+    "url",
+    "retrievedAt",
+    "attribution",
+    "documentHash"
+  ]
+}

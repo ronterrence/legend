@@ -1,0 +1,10 @@
+{
+  "player_id": "example_player",
+  "display_name": "Example Player",
+  "sport": "football",
+  "country": "Portugal",
+  "aliases": [
+    { "provider": "example-provider", "external_id": "external-123", "name": "Example Player" },
+    { "provider": "example-provider", "external_id": "external-123", "name": "Example Alias" }
+  ]
+}

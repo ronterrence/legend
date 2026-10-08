@@ -4,12 +4,12 @@ import { Store } from './storage/index.ts';
 import { seedDemo } from './ingestion/demo.ts';
 import { inspectRsssf } from './ingestion/rsssf.ts';
 import { FootballProvider } from './ingestion/api-football.ts';
-import { validateSnapshot } from './validation/index.ts';
+import { validateSnapshot, validateDashboard } from './validation/index.ts';
 import { assemble } from './metrics/index.ts';
 const store=new Store();
 try{
   const [command,file,url]=process.argv.slice(2);
-  if(command==='validate'){seedDemo(store);for(const s of store.listSnapshots()){validateSnapshot(s);const d=assemble(s,'check'),rows=[...d.pages.overview,...d.pages.efficiency,...d.pages.international.flatMap(g=>g.rows)];for(const row of rows)for(const v of [row.left,row.right])if(v.status==='available'&&!v.sourceIds.length)throw new Error('Metric missing provenance');}console.log('Schema validation and metric consistency checks passed.');}
+  if(command==='validate'){seedDemo(store);for(const s of store.listSnapshots()){validateSnapshot(s);const d=assemble(s,'check');validateDashboard(d);const rows=[...d.pages.overview,...d.pages.efficiency,...d.pages.international.flatMap(g=>g.rows)];for(const row of rows)for(const v of [row.left,row.right])if(v.status==='available'&&!v.sourceIds.length)throw new Error('Metric missing provenance');}console.log('Schema validation and metric consistency checks passed.');}
   else if(command==='import'){
     if(!file)throw new Error('Usage: npm run import -- path/to/bundle.json');
     const bundle=JSON.parse(readFileSync(file,'utf8'));

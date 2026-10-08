@@ -1,0 +1,7 @@
+{
+  "player_id": "example_player",
+  "display_name": "Example Player",
+  "sport": "football",
+  "country": "Exampleland",
+  "provider_id": "external-123"
+}

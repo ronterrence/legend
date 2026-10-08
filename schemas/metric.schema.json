@@ -1,176 +1,112 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Metric Result",
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "id": {
+    "metric_id": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
     },
-    "label": {
-      "type": "string",
-      "minLength": 1
-    },
-    "formula": {
-      "type": "string",
-      "minLength": 1
-    },
-    "unit": {
-      "type": "string"
-    },
-    "direction": {
+    "definition_version": { "type": "string", "minLength": 1 },
+    "status": {
       "enum": [
-        "higher",
-        "lower"
+        "available",
+        "unavailable",
+        "undefined",
+        "disputed",
+        "provisional"
       ]
     },
-    "left": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "value": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "numerator": {
-                  "type": "string",
-                  "pattern": "^[0-9]+$"
-                },
-                "denominator": {
-                  "type": "string",
-                  "pattern": "^[1-9][0-9]*$"
-                }
-              },
-              "required": [
-                "numerator",
-                "denominator"
-              ]
-            }
-          ]
-        },
-        "display": {
-          "type": "string",
-          "minLength": 1
-        },
-        "status": {
-          "enum": [
-            "available",
-            "unavailable",
-            "undefined",
-            "invalid"
-          ]
-        },
-        "reason": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "sourceIds": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      },
-      "required": [
-        "value",
-        "display",
-        "status",
-        "reason",
-        "sourceIds"
+    "exact_value": {
+      "anyOf": [
+        { "$ref": "#/definitions/exactRepresentation" },
+        { "type": "null" }
       ]
     },
-    "right": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "value": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "numerator": {
-                  "type": "string",
-                  "pattern": "^[0-9]+$"
-                },
-                "denominator": {
-                  "type": "string",
-                  "pattern": "^[1-9][0-9]*$"
-                }
-              },
-              "required": [
-                "numerator",
-                "denominator"
-              ]
-            }
-          ]
-        },
-        "display": {
-          "type": "string",
-          "minLength": 1
-        },
-        "status": {
-          "enum": [
-            "available",
-            "unavailable",
-            "undefined",
-            "invalid"
-          ]
-        },
-        "reason": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "sourceIds": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        }
-      },
-      "required": [
-        "value",
-        "display",
-        "status",
-        "reason",
-        "sourceIds"
-      ]
-    },
-    "leader": {
-      "enum": [
-        "left",
-        "right",
-        null
-      ]
-    },
-    "comparison": {
+    "display_value": { "type": "string", "minLength": 1 },
+    "reason": { "type": "string", "minLength": 1 },
+    "snapshot_id": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+    },
+    "scope_id": { "type": "string", "minLength": 1 },
+    "coverage_ref": { "type": "string", "minLength": 1 },
+    "provenance_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
+      },
+      "uniqueItems": true
     }
   },
   "required": [
-    "id",
-    "label",
-    "formula",
-    "unit",
-    "direction",
-    "left",
-    "right",
-    "leader",
-    "comparison"
+    "metric_id",
+    "definition_version",
+    "status",
+    "exact_value",
+    "snapshot_id",
+    "scope_id",
+    "coverage_ref",
+    "provenance_ids"
+  ],
+  "definitions": {
+    "exactRepresentation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "integer" },
+            "value": { "type": "string", "pattern": "^(0|[1-9][0-9]*)$" }
+          },
+          "required": ["kind", "value"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "decimal" },
+            "value": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+            }
+          },
+          "required": ["kind", "value"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "rational" },
+            "numerator": { "type": "string", "pattern": "^(0|[1-9][0-9]*)$" },
+            "denominator": { "type": "string", "pattern": "^[1-9][0-9]*$" }
+          },
+          "required": ["kind", "numerator", "denominator"]
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "available" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "exact_value": { "$ref": "#/definitions/exactRepresentation" },
+          "provenance_ids": { "type": "array", "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "enum": ["unavailable", "undefined"] } },
+        "required": ["status"]
+      },
+      "then": { "properties": { "exact_value": { "type": "null" } } }
+    }
   ]
 }

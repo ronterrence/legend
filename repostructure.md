@@ -3,7 +3,7 @@ legend-dashboard/
 ├── ARCHITECTURE.md
 ├── README.md
 ├── .env.example
-├── pyproject.toml / package.json
+├── package.json
 │
 ├── docs/
 │   ├── product/
@@ -27,6 +27,7 @@ legend-dashboard/
 │       └── completed/
 │
 ├── src/
+│   ├── contracts/
 │   ├── ingestion/
 │   ├── normalization/
 │   ├── metrics/
@@ -36,11 +37,17 @@ legend-dashboard/
 │
 ├── schemas/
 │   ├── player.schema.json
-│   ├── metric.schema.json
+│   ├── source-record.schema.json
+│   ├── provenance.schema.json
 │   ├── snapshot.schema.json
-│   └── provenance.schema.json
+│   ├── metric.schema.json
+│   └── dashboard/
+│       └── application payload schemas (Draft 7; same draft as canonical contracts)
 │
 ├── fixtures/
 │   └── cr7-vs-messi/
 │
 └── tests/
+    └── fixtures/
+        ├── valid/
+        └── invalid/

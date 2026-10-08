@@ -1,0 +1,11 @@
+{
+  "metric_id": "test_ratio",
+  "definition_version": "1.0.0",
+  "status": "available",
+  "exact_value": { "kind": "rational", "numerator": "73", "denominator": "100" },
+  "snapshot_id": "TEST_FINAL_V1",
+  "scope_id": "test_scope",
+  "coverage_ref": "TEST_COVERAGE_V1",
+  "provenance_ids": ["prov_test_001"],
+  "confidence_score": 1.1
+}

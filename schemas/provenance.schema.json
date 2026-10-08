@@ -1,44 +1,26 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Provenance",
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "id": {
+    "provenance_id": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
     },
-    "provider": {
+    "source_record_id": {
       "type": "string",
-      "enum": [
-        "fixture",
-        "rsssf",
-        "transfermarkt",
-        "api-football"
-      ]
+      "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
     },
-    "url": {
-      "type": "string",
-      "minLength": 1
-    },
-    "retrievedAt": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "attribution": {
-      "type": "string",
-      "minLength": 1
-    },
-    "documentHash": {
-      "type": "string",
-      "pattern": "^[a-f0-9]{64}$"
-    }
+    "retrieved_at": { "type": "string", "format": "date-time" },
+    "review_status": { "enum": ["pending", "accepted", "rejected"] },
+    "review_reason": { "type": "string", "minLength": 1 }
   },
   "required": [
-    "id",
-    "provider",
-    "url",
-    "retrievedAt",
-    "attribution",
-    "documentHash"
+    "provenance_id",
+    "source_record_id",
+    "retrieved_at",
+    "review_status",
+    "review_reason"
   ]
 }

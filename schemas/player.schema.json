@@ -1,41 +1,31 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Canonical Player",
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "id": {
+    "player_id": {
       "type": "string",
-      "minLength": 1
+      "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
     },
-    "name": {
-      "type": "string",
-      "minLength": 1
-    },
-    "country": {
-      "type": "string",
-      "minLength": 1
-    },
-    "initials": {
-      "type": "string",
-      "minLength": 1
-    },
-    "number": {
-      "type": "integer"
-    },
-    "accent": {
-      "type": "string",
-      "enum": [
-        "coral",
-        "mint"
-      ]
+    "display_name": { "type": "string", "minLength": 1 },
+    "sport": { "const": "football" },
+    "country": { "type": "string", "minLength": 1 },
+    "active": { "type": "boolean" },
+    "birth_date": { "type": "string", "format": "date" },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "provider": { "type": "string", "minLength": 1 },
+          "external_id": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 }
+        },
+        "required": ["provider", "external_id", "name"]
+      }
     }
   },
-  "required": [
-    "id",
-    "name",
-    "country",
-    "initials",
-    "number",
-    "accent"
-  ]
+  "required": ["player_id", "display_name", "sport", "country"]
 }

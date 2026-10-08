@@ -1,0 +1,10 @@
+{
+  "source_record_id": "src_example_001",
+  "provider": "Example Registry",
+  "source_type": "secondary",
+  "external_ref": "example-record-123",
+  "url": "https://example.org/record/123",
+  "retrieved_at": "12 September 2026",
+  "document_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "attribution": "Synthetic contract test source"
+}

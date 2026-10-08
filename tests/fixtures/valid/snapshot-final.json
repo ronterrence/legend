@@ -1,0 +1,26 @@
+{
+  "snapshot_id": "2025_26_FINAL_V1",
+  "snapshot_type": "FINAL",
+  "season": "2025/26",
+  "published_at": "2026-07-01T00:00:00Z",
+  "immutable": true,
+  "sporting_cutoff_at": "2026-07-01T00:00:00Z",
+  "coverage": {
+    "manifest_id": "COVERAGE_2025_26_V1",
+    "editions": [{
+      "edition_id": "example_league_2025_26",
+      "competition_id": "example_league",
+      "competition_name": "Example League",
+      "season": "2025/26",
+      "status": "completed",
+      "start_at": "2025-08-01T00:00:00Z",
+      "end_at": "2026-06-30T23:59:59Z",
+      "match_set_hash": "2a5e4f513f5ecce7892d7c0dc661c15275a55e10792852afad26b25524516d34",
+      "covered_matches": [{ "match_id": "match_001", "finished_at": "2026-06-01T12:00:00Z" }]
+    }],
+    "exclusions": ["Unfinished editions excluded"]
+  },
+  "supersedes": null,
+  "metric_definition_version": "1.0.0",
+  "source_set_version": "2025_26_v1"
+}

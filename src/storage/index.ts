@@ -25,9 +25,11 @@ export class Store {
     validateSnapshot(input);const s=input;
     for(const source of s.sources){const file=join(this.root,'sources',source.documentHash);if(!existsSync(file)||hash(readFileSync(file))!==source.documentHash)throw new Error(`Missing or altered source evidence: ${source.id}`);}
     if(s.kind==='verified')for(const edition of s.manifest.editions){const file=join(this.root,'sources',edition.matchSetHash!);if(!existsSync(file)||hash(readFileSync(file))!==edition.matchSetHash)throw new Error('Missing match-set evidence');const matches=JSON.parse(readFileSync(file,'utf8'));if(!Array.isArray(matches)||!matches.length||matches.some(m=>!m.id||!m.finishedAt||!Number.isFinite(Date.parse(m.finishedAt))||Date.parse(m.finishedAt)<Date.parse(edition.startAt!)||Date.parse(m.finishedAt)>Date.parse(edition.endAt!))||new Set(matches.map(m=>m.id)).size!==matches.length)throw new Error('Invalid preserved match set');}
-    const payload=JSON.stringify(s),existing=this.db.prepare('SELECT payload FROM snapshots WHERE id=?').get(s.id) as {payload:string}|undefined;
-    if(existing&&existing.payload!==payload)throw new Error('Immutable snapshot ID already exists with different content');
-    this.db.exec('BEGIN IMMEDIATE');try{
+      const payload=JSON.stringify(s);let existing:{payload:string}|undefined;
+      this.db.exec('BEGIN IMMEDIATE');try{
+        existing=this.db.prepare('SELECT payload FROM snapshots WHERE id=?').get(s.id) as {payload:string}|undefined;
+        if(existing&&existing.payload!==payload)throw new Error('Immutable snapshot ID already exists with different content');
+        if(s.supersedes){if(s.supersedes===s.id)throw new Error('Snapshot cannot supersede itself');if(!this.db.prepare('SELECT 1 FROM snapshots WHERE id=?').get(s.supersedes))throw new Error('Superseded snapshot does not exist');}
       this.db.prepare('INSERT OR IGNORE INTO snapshots VALUES (?,?)').run(s.id,payload);
       if(alias)this.db.prepare('INSERT INTO aliases VALUES (?,?) ON CONFLICT(name) DO UPDATE SET snapshot_id=excluded.snapshot_id').run(alias,s.id);
       this.db.exec('COMMIT');
