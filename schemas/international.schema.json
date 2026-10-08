@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "id": { "type": "string", "enum": ["overall", "friendly", "world_cup", "continental", "qualifier", "other"] },
+      "label": { "type": "string", "minLength": 1 },
+      "description": { "type": "string", "minLength": 1 },
+      "rows": { "type": "array", "items": { "$ref": "metric.schema.json" }, "minItems": 3, "maxItems": 3 }
+    },
+    "required": ["id", "label", "description", "rows"]
+  },
+  "minItems": 6,
+  "maxItems": 6
+}

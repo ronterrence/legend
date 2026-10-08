@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scopeId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "policy": {
+      "type": "string",
+      "enum": [
+        "completed_editions",
+        "current_season"
+      ]
+    },
+    "cutoffAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "editions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "competition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "season": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "in_progress"
+            ]
+          },
+          "matchSetId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "matchSetHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "competition",
+          "season",
+          "status",
+          "matchSetId"
+        ]
+      },
+      "minItems": 1
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "validated": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "scopeId",
+    "policy",
+    "cutoffAt",
+    "editions",
+    "exclusions",
+    "validated"
+  ]
+}

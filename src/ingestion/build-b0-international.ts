@@ -1,0 +1,29 @@
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { hash } from '../storage/index.ts';
+import type { Snapshot, MetricId } from '../domain.ts';
+
+const root=resolve(process.env.LEGEND_DATA_DIR??'runtime'), reports=join(root,'reports'), sources=join(root,'sources'), bundles=join(root,'bundles');
+mkdirSync(bundles,{recursive:true});
+const cr=JSON.parse(readFileSync(join(reports,'rsssf-cronaldo.json'),'utf8'));
+const lm=JSON.parse(readFileSync(join(reports,'rsssf-messi.json'),'utf8'));
+if(cr.issues.length)throw new Error(`Ronaldo report still has issues: ${cr.issues.join('; ')}`);
+const allowedMessiIssues=['Cap 110: cumulative goals disagree with match goals','Cap 111: cumulative goals disagree with match goals'];
+if(lm.issues.some((issue:string)=>!allowedMessiIssues.includes(issue)))throw new Error(`Unexpected Messi report issue: ${lm.issues.join('; ')}`);
+const reconciliations=['RSSSF cap 110 displays cumulative goals 34 between 53 and 54. The cumulative field is corrected to 53 for validation; the row goal value remains 0.','RSSSF cap 111 cumulative goals 54 then correctly follows cap 110 per-match value; no player goal value is changed.'];
+const category=(competition:string):'friendly'|'world_cup'|'continental'|'qualifier'|'other'=>{const c=competition.toLowerCase();if(c==='friendly')return 'friendly';if(c==='world cup')return 'world_cup';if(c.includes('qualifier')||c.includes('qual.'))return 'qualifier';if(c.includes('european champ')||c.includes('copa am'))return 'continental';return 'other';};
+const all=[...cr.matchRecords.map((m:any)=>({...m,playerId:'cristiano_ronaldo'})),...lm.matchRecords.map((m:any)=>({...m,playerId:'lionel_messi'}))];
+const matchSet=all.map((m:any)=>({id:`${m.playerId}:senior:${m.cap}`,finishedAt:`${m.date}T23:59:59Z`,playerId:m.playerId,goals:m.goals,competition:m.competition,sourceRow:m.raw}));
+const matchSetText=JSON.stringify(matchSet,null,2)+'\n',matchSetHash=hash(matchSetText),matchSetPath=join(sources,matchSetHash);writeFileSync(matchSetPath,matchSetText);
+const cutoff='2025-11-15T00:00:00Z', source=(id:string,url:string,documentHash:string)=>({id,provider:'rsssf' as const,url,retrievedAt:new Date().toISOString(),attribution:'Rec.Sport.Soccer Statistics Foundation (RSSSF)',documentHash});
+const sourcesList=[source('rsssf_cronaldo','https://www.rsssf.org/miscellaneous/cronaldo-intlg.html',cr.documentHash),source('rsssf_messi','https://www.rsssf.org/miscellaneous/messi-intlg.html',lm.documentHash)];
+const observations:Snapshot['observations']=[];
+for(const [player,report,sourceId] of [['cristiano_ronaldo',cr,'rsssf_cronaldo'],['lionel_messi',lm,'rsssf_messi'] ] as const){
+  const goals=report.matchRecords.reduce((sum:number,m:any)=>sum+m.goals,0);
+  const counts:Record<MetricId,number|null>={appearances:report.matchRecords.length,goals,assists:null,minutes:null,penalty_goals:null,club_trophies:null,international_trophies:null,awards:null};
+  for(const [metric,value] of Object.entries(counts))observations.push({playerId:player,metric:metric as MetricId,category:'overall',value,scopeId:'senior_international_v1',matchSetId:'international_matches_2003_2025_v1',definitionVersion:'v1',coverage:value===null?'unknown':'complete',sourceIds:[sourceId],review:'accepted',reviewReason:value===null?'RSSSF source does not publish this metric in the selected record':'Imported from reviewed RSSSF match record; '+(player==='lionel_messi'?reconciliations[0]:'')});
+  for(const group of ['friendly','world_cup','continental','qualifier','other'] as const){const rows=report.matchRecords.filter((m:any)=>category(m.competition)===group);const grouped:Record<'appearances'|'goals',number>={appearances:rows.length,goals:rows.reduce((sum:number,m:any)=>sum+m.goals,0)};for(const [metric,value] of Object.entries(grouped))observations.push({playerId:player,metric:metric as MetricId,category:group,value,scopeId:'senior_international_v1',matchSetId:'international_matches_2003_2025_v1',definitionVersion:'v1',coverage:'complete',sourceIds:[sourceId],review:'accepted',reviewReason:`Aggregated from ${rows.length} reviewed RSSSF match records in normalized ${group} category`});}
+}
+const snapshot:Snapshot={id:'B0_INTL_2025_V2',label:'International benchmark · through 14 Nov 2025',freshness:'B0',kind:'verified',publishedAt:new Date().toISOString(),manifest:{id:'B0_INTL_COVERAGE_V2',scopeId:'senior_international_v1',policy:'completed_editions',cutoffAt:cutoff,editions:[{competition:'Senior international matches',season:'2003–2025',status:'completed',matchSetId:'international_matches_2003_2025_v1',startAt:'2003-08-20T00:00:00Z',endAt:'2025-11-14T23:59:59Z',matchSetHash}],exclusions:['Club appearances, assists and minutes are not included in this international-only benchmark.','RSSSF source records include recognized senior friendlies and competitive internationals.','The benchmark ends at the latest reviewed source match, not the 2025/26 club-season cutoff.'],validated:true},players:[{id:'cristiano_ronaldo',name:'Cristiano Ronaldo',country:'Portugal',initials:'CR',number:7,accent:'coral'},{id:'lionel_messi',name:'Lionel Messi',country:'Argentina',initials:'LM',number:10,accent:'mint'}],sources:sourcesList,observations};
+const bundle={snapshot,alias:'b0_international',evidence:[...sourcesList.map(s=>({path:`../sources/${s.documentHash}`,hash:s.documentHash})),{path:`../sources/${matchSetHash}`,hash:matchSetHash}],review:{reconciliations,sourceIssues:lm.issues}};
+const output=join(bundles,'b0-international.json');writeFileSync(output,JSON.stringify(bundle,null,2)+'\n');console.log(output);console.log(`Match rows: ${matchSet.length}; Ronaldo ${cr.matchRecords.length}/${observations.filter(o=>o.playerId==='cristiano_ronaldo'&&o.metric==='goals')[0].value} goals; Messi ${lm.matchRecords.length}/${observations.filter(o=>o.playerId==='lionel_messi'&&o.metric==='goals')[0].value} goals`);

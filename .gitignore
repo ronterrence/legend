@@ -1,0 +1,9 @@
+node_modules/
+.venv/
+dist/
+runtime/
+.env
+test-results/
+playwright-report/
+*.tsbuildinfo
+docs/

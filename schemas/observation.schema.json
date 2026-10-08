@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "playerId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "metric": {
+      "type": "string",
+      "enum": [
+        "appearances",
+        "goals",
+        "assists",
+        "minutes",
+        "penalty_goals",
+        "club_trophies",
+        "international_trophies",
+        "awards"
+      ]
+    },
+    "value": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "scopeId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "matchSetId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "definitionVersion": {
+      "const": "v1"
+    },
+    "coverage": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "partial",
+        "unknown"
+      ]
+    },
+    "sourceIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "review": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "pending",
+        "rejected"
+      ]
+    },
+    "reviewReason": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "playerId",
+    "metric",
+    "value",
+    "scopeId",
+    "matchSetId",
+    "definitionVersion",
+    "coverage",
+    "sourceIds",
+    "review",
+    "reviewReason"
+  ]
+}
