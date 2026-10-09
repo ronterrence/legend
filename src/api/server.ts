@@ -1,7 +1,7 @@
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import { chromium } from '@playwright/test';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { Store } from '../storage/index.ts';
 import { seedDemo } from '../ingestion/demo.ts';
@@ -33,17 +33,21 @@ app.post('/api/provider/refresh',async(_req,res)=>res.json(await refresh()));
 const timer=setInterval(()=>{const status=provider.status();if(status.configured&&status.configPresent&&status.stale&&!refreshing)void refresh().catch(()=>{});},12*3600000);timer.unref();
 const exportsInFlight=new Map<string,Promise<void>>();
 app.post('/api/comparisons/:id/export',async(req,res)=>{
-  const d=store.comparison(req.params.id),page=req.body.page;if(!['overview','efficiency','international'].includes(page))throw new Error('Invalid export page');
-  const key=`${d.id}-${page}`,file=join(store.root,'exports',`${key}.png`),metadata=join(store.root,'exports',`${key}.json`);
+  const {page,theme,resolution}=req.body??{};
+  if(Object.keys(req.body??{}).some(key=>!['page','theme','resolution'].includes(key)))throw new Error('Invalid export option');
+  if(!['overview','efficiency','international'].includes(page))throw new Error('Invalid export page');
+  if(theme!=='legend')throw new Error('Unsupported export theme');
+  if(!['1080','4k'].includes(resolution))throw new Error('Invalid export resolution');
+  const d=store.comparison(req.params.id),key=`${d.id}-${page}-${theme}-${resolution}`,file=join(store.root,'exports',`${key}.png`),metadata=join(store.root,'exports',`${key}.json`);
   if(!existsSync(file)){
     let job=exportsInFlight.get(key);
-    if(!job){job=(async()=>{const browser=await chromium.launch({headless:true});try{const tab=await browser.newPage({viewport:{width:1080,height:1920},deviceScaleFactor:1});await tab.goto(`${origin}/?export=${d.id}&page=${page}`);await tab.locator('[data-export-ready="true"]').waitFor();await tab.evaluate(()=>document.fonts.ready);const buffer=await tab.locator('.dashboard').screenshot();writeFileSync(metadata,JSON.stringify({page,dashboard:d},null,2));writeFileSync(file,buffer);}finally{await browser.close();}})();exportsInFlight.set(key,job);}
+    if(!job){job=(async()=>{const browser=await chromium.launch({headless:true});try{const tab=await browser.newPage({viewport:{width:1080,height:1920},deviceScaleFactor:resolution==='4k'?2:1});await tab.goto(`${origin}/?export=${d.id}&page=${page}&theme=${theme}`);await tab.locator('[data-export-ready="true"]').waitFor();await tab.evaluate(()=>document.fonts.ready);const buffer=await tab.locator('.dashboard').screenshot({animations:'disabled',caret:'hide'});const dimensions=resolution==='4k'?{width:2160,height:3840}:{width:1080,height:1920};const evidenceState=d.kind==='demo'?'synthetic_demo':'verified';writeFileSync(metadata,JSON.stringify({comparison_id:d.id,snapshot_id:d.snapshotId,sporting_cutoff:d.cutoffAt,module:page,evidence_state:evidenceState,product_branding:'THE LEGEND DASHBOARD',theme,template_version:'legend-poster-v1',renderer_version:d.rendererVersion,resolution,dimensions,dashboard:d},null,2));writeFileSync(file,buffer);}finally{await browser.close();}})();exportsInFlight.set(key,job);}
     try{await job;}finally{exportsInFlight.delete(key);}
   }
   res.json({png:`/api/exports/${key}.png`,metadata:`/api/exports/${key}.json`});
 });
 app.get('/api/exports/:file',(req,res)=>{
-  if(!/^[a-f0-9-]+-(overview|efficiency|international)\.(png|json)$/.test(req.params.file)){res.status(400).end();return;}
+  if(!/^[a-f0-9-]+-(overview|efficiency|international)-legend-(1080|4k)\.(png|json)$/.test(req.params.file)){res.status(400).end();return;}
   const path=join(store.root,'exports',req.params.file);if(!existsSync(path)){res.status(404).end();return;}res.download(path);
 });
 app.use('/api',(_req,res)=>res.status(404).json({error:'Unknown API route'}));
