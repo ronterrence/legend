@@ -290,6 +290,80 @@ export function calculateMetric(
   return resultValue;
 }
 
+export function metricResultForFact(
+  id: MetricId,
+  snapshot: Snapshot,
+  observations: readonly Observation[],
+  category: Observation["category"] = "overall",
+): MetricResult {
+  const row = observations.find(
+    (item) =>
+      item.metric === id &&
+      (item.category ?? "overall") === (category ?? "overall"),
+  );
+  const provenanceIds = row
+    ? [
+        ...new Set(
+          row.sourceIds.map((sourceId) => provenanceIdFor(row, sourceId)),
+        ),
+      ].sort()
+    : [];
+  const base = {
+    metric_id: id,
+    definition_version: row?.definitionVersion ?? "v1",
+    snapshot_id: snapshot.id,
+    scope_id: row?.scopeId ?? snapshot.manifest.scopeId,
+    coverage_ref: snapshot.manifest.id,
+    provenance_ids: provenanceIds,
+  };
+  if (!row)
+    return {
+      ...base,
+      status: "unavailable",
+      exact_value: null,
+      reason: "missing_input",
+    };
+  if (row.review === "rejected")
+    return {
+      ...base,
+      status: "disputed",
+      exact_value: null,
+      reason: "disputed_input",
+    };
+  if (row.review === "pending")
+    return {
+      ...base,
+      status: "provisional",
+      exact_value: null,
+      reason: "provisional_input",
+    };
+  if (
+    row.value === null ||
+    row.coverage !== "complete" ||
+    provenanceIds.length === 0
+  )
+    return {
+      ...base,
+      status: "unavailable",
+      exact_value: null,
+      reason: "unavailable_input",
+    };
+  if (row.value < 0 || !Number.isFinite(row.value))
+    throw new Error("invalid_input");
+  if (id !== "minutes" && !Number.isSafeInteger(row.value))
+    throw new Error("invalid_input");
+  const result: MetricResult = {
+    ...base,
+    status: "available",
+    exact_value: Number.isSafeInteger(row.value)
+      ? { kind: "integer", value: row.value.toString() }
+      : { kind: "decimal", value: row.value.toString() },
+    display_value: row.value.toString(),
+  };
+  validateMetricResult(result);
+  return result;
+}
+
 export function compareMetricResults(
   left: MetricResult,
   right: MetricResult,

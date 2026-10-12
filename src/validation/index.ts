@@ -13,44 +13,71 @@ import type { Snapshot, Dashboard } from '../domain.ts';
 import { validateMetricResult, validateProvenance } from '../contracts/index.ts';
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
-ajv.addSchema(coverageSchema,'coverage.schema.json');ajv.addSchema(playerSchema,'player.schema.json');ajv.addSchema(provenanceSchema,'provenance.schema.json');ajv.addSchema(metricSchema,'metric.schema.json');ajv.addSchema(canonicalMetricSchema,'canonical-metric.schema.json');ajv.addSchema(canonicalProvenanceSchema,'canonical-provenance.schema.json');ajv.addSchema(internationalSchema,'international.schema.json');
+ajv.addSchema(coverageSchema, 'coverage.schema.json');
+ajv.addSchema(playerSchema, 'player.schema.json');
+ajv.addSchema(provenanceSchema, 'provenance.schema.json');
+ajv.addSchema(metricSchema, 'metric.schema.json');
+ajv.addSchema(canonicalMetricSchema, 'canonical-metric.schema.json');
+ajv.addSchema(canonicalProvenanceSchema, 'canonical-provenance.schema.json');
+ajv.addSchema(internationalSchema, 'international.schema.json');
 const validate = ajv.compile<Snapshot>(snapshotSchema);
-const validateOutput=ajv.compile<Dashboard>(dashboardSchema);
-export function validateDashboard(input:unknown):asserts input is Dashboard {
-  if(!validateOutput(input))throw new Error(`Dashboard schema validation failed: ${ajv.errorsText(validateOutput.errors)}`);
-  const dashboard=input;
-  const provenanceIds=new Set(dashboard.provenance.map(record=>record.provenance_id));
-  for(const record of dashboard.provenance){validateProvenance(record);if(!dashboard.sources.some(source=>source.id===record.source_record_id))throw new Error(`Unknown provenance source: ${record.source_record_id}`);}
-  for(const result of dashboard.metricResults){
-    validateMetricResult(result);
-    if(result.snapshot_id!==dashboard.snapshotId)throw new Error('Metric result snapshot reference does not match dashboard');
-    if(result.coverage_ref!==dashboard.coverage.id)throw new Error('Metric result coverage reference does not match dashboard');
-    if(result.provenance_ids.some(id=>!provenanceIds.has(id)))throw new Error('Metric result references unknown provenance');
+const validateOutput = ajv.compile<Dashboard>(dashboardSchema);
+export function validateDashboard(input: unknown): asserts input is Dashboard {
+  if (!validateOutput(input)) throw new Error(`Dashboard schema validation failed: ${ajv.errorsText(validateOutput.errors)}`);
+  const dashboard = input;
+  const provenanceIds = new Set(dashboard.provenance.map((record) => record.provenance_id));
+  for (const record of dashboard.provenance) {
+    validateProvenance(record);
+    if (!dashboard.sources.some((source) => source.id === record.source_record_id)) throw new Error(`Unknown provenance source: ${record.source_record_id}`);
   }
+  const pageResults = [...dashboard.pages.overview, ...dashboard.pages.efficiency, ...dashboard.pages.international.flatMap((group) => group.rows)].flatMap((row) => [row.left, row.right]);
+  for (const result of [...dashboard.metricResults, ...pageResults]) {
+    validateMetricResult(result);
+    if (result.snapshot_id !== dashboard.snapshotId) throw new Error('Metric result snapshot reference does not match dashboard');
+    if (result.coverage_ref !== dashboard.coverage.id) throw new Error('Metric result coverage reference does not match dashboard');
+    if (result.provenance_ids.some((id) => !provenanceIds.has(id))) throw new Error('Metric result references unknown provenance');
+  }
+  const publishedResults = new Set(dashboard.metricResults.map((result) => JSON.stringify(result)));
+  if (pageResults.some((result) => !publishedResults.has(JSON.stringify(result)))) throw new Error('Page metric result is missing from dashboard metric results');
 }
 export function validateSnapshot(input: unknown): asserts input is Snapshot {
   if (!validate(input)) throw new Error(`Schema validation failed: ${ajv.errorsText(validate.errors)}`);
   const s = input;
-  const unique = (values: string[], label: string) => { if (new Set(values).size !== values.length) throw new Error(`Duplicate ${label}`); };
-  unique(s.players.map(p=>p.id), 'player'); unique(s.sources.map(p=>p.id), 'source');
-  unique(s.observations.map(o=>`${o.playerId}:${o.metric}:${o.category??'overall'}`), 'observation; reconcile conflicts before publication');
+  const unique = (values: string[], label: string) => {
+    if (new Set(values).size !== values.length) throw new Error(`Duplicate ${label}`);
+  };
+  unique(
+    s.players.map((p) => p.id),
+    'player',
+  );
+  unique(
+    s.sources.map((p) => p.id),
+    'source',
+  );
+  unique(
+    s.observations.map((o) => `${o.playerId}:${o.metric}:${o.category ?? 'overall'}`),
+    'observation; reconcile conflicts before publication',
+  );
   if (!s.manifest.validated) throw new Error('Coverage manifest requires validation');
   if (Date.parse(s.manifest.cutoffAt) > Date.parse(s.publishedAt)) throw new Error('Cutoff must not follow publication');
-  if (s.freshness === 'B0' && (s.manifest.policy !== 'completed_editions' || s.manifest.editions.some(e=>e.status !== 'completed'))) throw new Error('B0 requires completed editions');
+  if (s.freshness === 'B0' && (s.manifest.policy !== 'completed_editions' || s.manifest.editions.some((e) => e.status !== 'completed'))) throw new Error('B0 requires completed editions');
   if (s.freshness === 'B1' && s.manifest.policy !== 'current_season') throw new Error('B1 requires current-season coverage');
-  if (s.kind === 'verified' && s.sources.some(x=>x.provider === 'fixture')) throw new Error('Synthetic evidence cannot become verified');
-  if(s.kind==='verified')for(const e of s.manifest.editions){
-    if(!e.startAt||!e.endAt||!e.matchSetHash)throw new Error('Verified coverage requires edition boundaries and preserved match-set evidence');
-    if(Date.parse(e.startAt)>Date.parse(e.endAt)||Date.parse(e.endAt)>=Date.parse(s.manifest.cutoffAt))throw new Error('Edition boundaries exceed shared exclusive cutoff');
-  }
+  if (s.kind === 'verified' && s.sources.some((x) => x.provider === 'fixture')) throw new Error('Synthetic evidence cannot become verified');
+  if (s.kind === 'verified')
+    for (const e of s.manifest.editions) {
+      if (!e.startAt || !e.endAt || !e.matchSetHash) throw new Error('Verified coverage requires edition boundaries and preserved match-set evidence');
+      if (Date.parse(e.startAt) > Date.parse(e.endAt) || Date.parse(e.endAt) >= Date.parse(s.manifest.cutoffAt)) throw new Error('Edition boundaries exceed shared exclusive cutoff');
+    }
   for (const o of s.observations) {
-    if (!s.players.some(p=>p.id===o.playerId) || o.sourceIds.some(id=>!s.sources.some(x=>x.id===id))) throw new Error('Unknown player or source reference');
+    if (!s.players.some((p) => p.id === o.playerId) || o.sourceIds.some((id) => !s.sources.some((x) => x.id === id))) throw new Error('Unknown player or source reference');
     if (o.review !== 'accepted') throw new Error('Observations require accepted review');
-    if (o.scopeId !== s.manifest.scopeId || !s.manifest.editions.some(e=>e.matchSetId === o.matchSetId)) throw new Error('Observation coverage not in manifest');
+    if (o.scopeId !== s.manifest.scopeId || !s.manifest.editions.some((e) => e.matchSetId === o.matchSetId)) throw new Error('Observation coverage not in manifest');
     if (o.value !== null && (!Number.isFinite(o.value) || (o.metric !== 'minutes' && !Number.isSafeInteger(o.value)))) throw new Error('Counts must be safe integers');
   }
   for (const p of s.players) {
-    const obs=s.observations.filter(o=>o.playerId===p.id), goals=obs.find(o=>o.metric==='goals'), penalties=obs.find(o=>o.metric==='penalty_goals');
-    if (goals?.value != null && penalties?.value != null && goals.matchSetId===penalties.matchSetId && penalties.value > goals.value) throw new Error('Penalty goals exceed goals');
+    const obs = s.observations.filter((o) => o.playerId === p.id),
+      goals = obs.find((o) => o.metric === 'goals'),
+      penalties = obs.find((o) => o.metric === 'penalty_goals');
+    if (goals?.value != null && penalties?.value != null && goals.matchSetId === penalties.matchSetId && penalties.value > goals.value) throw new Error('Penalty goals exceed goals');
   }
 }

@@ -219,6 +219,21 @@ test("comparison assembly exposes canonical results and resolvable provenance", 
   );
   assert.equal(dashboard.pages.efficiency.length, 6);
   assert.ok(dashboard.metricResults.length >= data.players.length * 6);
+  const rows = [
+    ...dashboard.pages.overview,
+    ...dashboard.pages.efficiency,
+    ...dashboard.pages.international.flatMap((group) => group.rows),
+  ];
+  for (const row of rows) {
+    assert.equal("formula" in row, false);
+    for (const result of [row.left, row.right]) {
+      assert.doesNotThrow(() => validateMetricResult(result));
+      assert.equal("result" in result, false);
+      assert.equal("sourceIds" in result, false);
+    }
+  }
+  assert.equal(dashboard.pages.overview[0]?.left.metric_id, "appearances");
+  assert.equal(dashboard.pages.overview[0]?.left.display_value, "120");
   for (const result of dashboard.metricResults) {
     assert.equal(result.snapshot_id, data.id);
     assert.equal(result.coverage_ref, data.manifest.id);

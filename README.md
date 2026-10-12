@@ -18,7 +18,7 @@ The studio includes a clearly labeled synthetic demo snapshot and a verified int
 
 ## Use the studio
 
-Select two players and a snapshot; choose Career Overview, Goal Efficiency, or International Performance; build to save a comparison. The international page groups the preserved records into Overall, Friendlies, World Cup, Continental championship, Qualifiers, and Other. Click a metric for its formula, exact value and sources. Open Sources & coverage for scope and exclusions. Export PNG creates a 1080 × 1920 image plus a JSON metadata download. My comparisons reopens pinned results. No viewing/export action calls a data provider.
+Select two players and a snapshot; choose Career Overview, Goal Efficiency, or International Performance; build to save a comparison. The international page groups the preserved records into Overall, Friendlies, World Cup, Continental championship, Qualifiers, and Other. Click a metric for its canonical definition version, exact value, status and provenance. Open Sources & coverage for scope and exclusions. Export PNG creates a 1080 × 1920 image plus a JSON metadata download. My comparisons reopens pinned results. No viewing/export action calls a data provider.
 
 ## Source workflows
 

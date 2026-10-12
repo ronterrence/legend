@@ -1,0 +1,282 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Provider Definition",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "providerId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
+    },
+    "displayName": { "type": "string", "minLength": 1 },
+    "providerClass": {
+      "enum": [
+        "official",
+        "historical_archive",
+        "structured_api",
+        "midmarket_provider",
+        "enterprise_provider",
+        "live_event_provider",
+        "secondary_reference"
+      ]
+    },
+    "sourceType": {
+      "enum": [
+        "official",
+        "enterprise_provider",
+        "midmarket_provider",
+        "historical_archive",
+        "secondary"
+      ]
+    },
+    "accessClass": {
+      "enum": ["free", "freemium", "paid", "enterprise", "internal"]
+    },
+    "homepage": { "type": "string", "format": "uri" },
+    "freshnessClasses": { "$ref": "#/definitions/freshnessClasses" },
+    "dataEras": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "archival",
+          "structured_record",
+          "early_digital",
+          "event_data",
+          "advanced_analytics",
+          "tracking_ai"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "supportedSports": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "supportedMetricFamilies": { "$ref": "#/definitions/metricFamilies" },
+    "competitionCoverage": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/competitionCoverage" }
+    },
+    "historicalCoverage": { "$ref": "#/definitions/historicalCoverage" },
+    "access": { "$ref": "#/definitions/access" },
+    "licensing": { "$ref": "#/definitions/licensing" },
+    "attribution": { "$ref": "#/definitions/attribution" },
+    "operational": { "$ref": "#/definitions/operational" },
+    "cost": { "$ref": "#/definitions/cost" },
+    "reviewState": {
+      "enum": ["unreviewed", "reviewed", "verified", "contested"]
+    },
+    "productCompatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "legend": { "type": "boolean" },
+        "legend_pro": { "type": "boolean" },
+        "legend_live": { "type": "boolean" }
+      },
+      "required": ["legend", "legend_pro", "legend_live"]
+    },
+    "priority": { "type": "integer" },
+    "enabled": { "type": "boolean" }
+  },
+  "required": [
+    "providerId",
+    "displayName",
+    "providerClass",
+    "sourceType",
+    "accessClass",
+    "freshnessClasses",
+    "dataEras",
+    "supportedSports",
+    "supportedMetricFamilies",
+    "competitionCoverage",
+    "access",
+    "licensing",
+    "attribution",
+    "cost",
+    "reviewState",
+    "productCompatibility",
+    "enabled"
+  ],
+  "definitions": {
+    "metricFamily": {
+      "enum": [
+        "identity",
+        "fixtures",
+        "results",
+        "lineups",
+        "appearances",
+        "minutes",
+        "goals",
+        "penalties",
+        "assists",
+        "cards",
+        "trophies",
+        "awards",
+        "shots",
+        "passing",
+        "defending",
+        "possession",
+        "xg",
+        "xa",
+        "event_coordinates",
+        "tracking",
+        "live_events"
+      ]
+    },
+    "metricFamilies": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/metricFamily" },
+      "uniqueItems": true
+    },
+    "freshnessClasses": {
+      "type": "array",
+      "items": { "enum": ["B0", "B1", "B2", "B3"] },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "competitionCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "competitionRef": { "type": "string", "minLength": 1 },
+        "fromSeason": { "type": "string", "minLength": 1 },
+        "toSeason": { "type": "string", "minLength": 1 },
+        "coverageLevel": {
+          "enum": ["basic", "standard", "event", "tracking", "live"]
+        },
+        "metricFamilies": { "$ref": "#/definitions/metricFamilies" },
+        "completeness": { "enum": ["unknown", "partial", "complete"] },
+        "knownGaps": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "required": ["competitionRef", "coverageLevel", "completeness"]
+    },
+    "historicalCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "earliestSeason": { "type": "string", "minLength": 1 },
+        "latestSeason": { "type": "string", "minLength": 1 },
+        "earliestDate": { "type": "string", "format": "date" },
+        "latestDate": { "type": "string", "format": "date" },
+        "continuity": { "enum": ["unknown", "partial", "continuous"] },
+        "metricDepth": { "$ref": "#/definitions/metricFamilies" },
+        "archiveCompleteness": {
+          "enum": ["unknown", "partial", "reviewed_complete"]
+        },
+        "notes": { "type": "string" }
+      },
+      "required": ["continuity", "archiveCompleteness"]
+    },
+    "access": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "methods": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "public_web",
+              "manual_download",
+              "api",
+              "bulk_export",
+              "webhook",
+              "stream"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "authType": {
+          "enum": ["none", "api_key", "oauth", "basic", "contract_custom"]
+        },
+        "trialAvailable": { "type": "boolean" },
+        "contractRequired": { "type": "boolean" }
+      },
+      "required": ["methods", "authType"]
+    },
+    "licensing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "licenseType": {
+          "enum": [
+            "public",
+            "open",
+            "commercial",
+            "enterprise",
+            "internal",
+            "unknown"
+          ]
+        },
+        "redistributionAllowed": { "type": "boolean" },
+        "derivativeUseAllowed": { "type": "boolean" },
+        "displayAttributionRequired": { "type": "boolean" },
+        "cachingAllowed": { "type": "boolean" },
+        "storageAllowed": { "type": "boolean" },
+        "termsUrl": { "type": "string", "format": "uri" },
+        "notes": { "type": "string" }
+      },
+      "required": ["licenseType"]
+    },
+    "attribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": { "type": "boolean" },
+        "displayText": { "type": "string", "minLength": 1 },
+        "logoRequired": { "type": "boolean" },
+        "sourceLinkRequired": { "type": "boolean" }
+      },
+      "required": ["required"],
+      "allOf": [
+        {
+          "if": { "properties": { "required": { "const": true } } },
+          "then": { "required": ["displayText"] }
+        }
+      ]
+    },
+    "operational": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rateLimitModel": { "type": "string", "minLength": 1 },
+        "maxRequestsPerMinute": { "type": "integer", "minimum": 1 },
+        "maxRequestsPerDay": { "type": "integer", "minimum": 1 },
+        "supportsBulkExport": { "type": "boolean" },
+        "supportsWebhooks": { "type": "boolean" },
+        "supportsStreaming": { "type": "boolean" },
+        "expectedLatencyClass": {
+          "enum": ["archive", "batch", "current", "near_live", "live"]
+        }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "costClass": {
+          "enum": ["free", "low", "medium", "high", "enterprise", "unknown"]
+        },
+        "pricingModel": {
+          "enum": [
+            "subscription",
+            "per_request",
+            "per_competition",
+            "per_feed",
+            "custom",
+            "unknown"
+          ]
+        },
+        "notes": { "type": "string" }
+      },
+      "required": ["costClass"]
+    }
+  }
+}
